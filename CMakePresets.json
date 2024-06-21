@@ -1,0 +1,56 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 1,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default_debug",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/debug",
+      "installDir": "${sourceDir}/output/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "debug",
+        "BUILD_SHARED_LIBS": "ON",
+        "CMAKE_VERBOSE_MAKEFILE": "OFF",
+        "CMAKE_TOOLCHAIN_FILE": "cmake/toolchain.cmake"
+      }
+    },
+    {
+      "name": "default_release",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/release",
+      "installDir": "${sourceDir}/output/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "release",
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "inherits": "default_debug",
+      "displayName": "debug",
+      "cacheVariables": {}
+    },
+    {
+      "name": "release",
+      "inherits": "default_release",
+      "displayName": "release",
+      "cacheVariables": {}
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "targets": ["install"]
+    },
+    {
+      "name": "release",
+      "configurePreset": "release",
+      "targets": ["install"]
+    }
+  ]
+}

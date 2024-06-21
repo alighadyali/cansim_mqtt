@@ -1,0 +1,56 @@
+FROM arm64v8/ubuntu:bionic AS base
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends software-properties-common gdb ca-certificates gpg wget && \
+    add-apt-repository -y ppa:aziotsdklinux/ppa-azureiot && \
+    apt-get update && \
+    apt-get install -y \
+    azure-iot-sdk-c-dev \
+    net-tools \
+    can-utils \
+    && wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null \
+    && echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ bionic main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null \
+    && apt-get update \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM base AS build-env
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends pkg-config \
+    git zip unzip tar gcc g++ make cmake openssl \
+    libssl-dev && \ 
+    rm -rf /var/lib/apt/lists/*
+
+RUN wget https://github.com/gabime/spdlog/archive/refs/tags/v1.12.0.tar.gz \
+    && tar zxvf v1.12.0.tar.gz \
+    && cd spdlog-1.12.0 \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make -j$(nproc) \
+    && make install
+
+RUN wget https://github.com/eclipse/paho.mqtt.c/archive/refs/tags/v1.3.13.tar.gz \
+    && tar zxvf v1.3.13.tar.gz \
+    && cd paho.mqtt.c-1.3.13 \
+    && mkdir build \
+    && cd build \
+    && cmake -DPAHO_BUILD_STATIC=TRUE -DPAHO_WITH_SSL=TRUE -DCMAKE_INSTALL_PREFIX=/opt/libs/paho-c .. \
+    && cmake --build . --target install 
+
+RUN wget https://github.com/eclipse/paho.mqtt.cpp/archive/refs/tags/v1.3.2.tar.gz \
+    && tar zxvf v1.3.2.tar.gz \
+    && cd paho.mqtt.cpp-1.3.2 \
+    && mkdir build \ 
+    && cd build \
+    && cmake -DPAHO_WITH_SSL=TRUE -DPAHO_BUILD_STATIC=TRUE -DCMAKE_INSTALL_PREFIX=/opt/libs/paho-cpp -DCMAKE_PREFIX_PATH=/opt/libs/paho-c  .. \
+    && cmake --build . --target install 
+
+WORKDIR /app
+COPY . ./
+
+RUN cmake -DCMAKE_BUILD_TYPE=Debug .
+RUN cmake --build . 
+
+FROM base
+WORKDIR /app
+COPY --from=build-env /app ./
+CMD ["./cansim_mqtt"] 

@@ -1,0 +1,86 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "config",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--preset",
+                "${input:presetName}"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "clear": true
+            },
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "--preset",
+                "${input:presetName}",
+                "-j$(nproc)"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "clear": true
+            },
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "clean",
+            "type": "shell",
+            "command": "./clean",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "clear": true
+            },
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "run",
+            "type": "shell",
+            "command": "./${input:appName}",
+            "options": {
+                "cwd": "${workspaceFolder}/output/${input:presetName}/bin"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "clear": true
+            },
+            "problemMatcher": "$gcc",
+            "dependsOn": [
+                "build"
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "presetName",
+            "description": "Name of the preset",
+            "type": "pickString",
+            "options": [
+                "debug",
+                "release"
+            ],
+            "default": "debug"
+        },
+        {
+            "id": "appName",
+            "description": "Name of the app",
+            "type": "pickString",
+            "options": [
+                "cansim_mqtt"
+            ],
+            "default": "cansim_mqtt"
+        }
+    ]
+}

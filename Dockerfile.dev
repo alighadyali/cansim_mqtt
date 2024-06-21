@@ -1,0 +1,68 @@
+ARG VARIANT=ubuntu-18.04
+FROM mcr.microsoft.com/vscode/devcontainers/base:0-${VARIANT}
+
+# select the version of cmake you need to use
+ARG REINSTALL_CMAKE_VERSION_FROM_SOURCE="3.28.3"
+
+# This Dockerfile's base image has a non-root user with sudo access. Use the "remoteUser"
+# property in devcontainer.json to use it. On Linux, the container user's GID/UIDs
+# will be updated to match your local UID/GID (when using the dockerFile property).
+# See https://aka.ms/vscode-remote/containers/non-root-user for details.
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+ENV VCPKG_ROOT /usr/vcpkg
+
+# Configure apt and install packages
+RUN apt-get update \
+    && export DEBIAN_FRONTEND=noninteractive \
+    #
+    # Install C++ tools and Git
+    && apt-get -y install \
+    build-essential \
+    gdb \
+    cmake \
+    cppcheck \
+    git \
+    zip \
+    unzip \
+    uuid-dev \
+    net-tools \
+    can-utils \
+    pkg-config \
+    mosquitto \
+    mosquitto-clients \
+    #
+    # [Optional] Update UID/GID if needed
+    && if [ "$USER_GID" != "1000" ] || [ "$USER_UID" != "1000" ]; then \
+    groupmod --gid $USER_GID $USERNAME \
+    && usermod --uid $USER_UID --gid $USER_GID $USERNAME \
+    && chown -R $USER_UID:$USER_GID /home/$USERNAME; \
+    fi \
+    #
+    # Clean up
+    && apt-get autoremove -y \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Optionally install the cmake for vcpkg
+COPY .devcontainer/reinstall-cmake.sh /tmp/
+
+RUN if [ "${REINSTALL_CMAKE_VERSION_FROM_SOURCE}" != "none" ]; then \
+    chmod +x /tmp/reinstall-cmake.sh && /tmp/reinstall-cmake.sh ${REINSTALL_CMAKE_VERSION_FROM_SOURCE}; \
+    fi \
+    && rm -f /tmp/reinstall-cmake.sh
+
+# Install vcpkg dependency manager
+RUN git clone https://github.com/Microsoft/vcpkg ${VCPKG_ROOT} \
+    && cd ${VCPKG_ROOT} \
+    && git reset --hard fe1e9f508ee13ed3d0a7d318beac7efe1ec4f9d7 \
+    && ./bootstrap-vcpkg.sh
+
+ENV PATH "${VCPKG_ROOT}:${PATH}"
+
+# Install C++ dependencies using vcpkg
+RUN vcpkg integrate install \
+    && vcpkg install spdlog \
+    && vcpkg install paho-mqttpp3

@@ -1,0 +1,24 @@
+{
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/sources/poky/bitbake/lib",
+        "${workspaceFolder}/sources/poky/meta/lib"
+    ],
+    "[python]": {
+        "diffEditor.ignoreTrimWhitespace": false,
+        "gitlens.codeLens.symbolScopes": [
+            "!Module"
+        ],
+        "files.trimTrailingWhitespace": false
+    },
+    "[shellscript]": {
+        "files.eol": "\n",
+        "files.trimTrailingWhitespace": false
+    },
+    "files.associations": {
+        "*.conf": "bitbake",
+        "*.inc": "bitbake",
+        "*.tcc": "cpp",
+        "atomic": "cpp"
+    },
+    "C_Cpp.clang_format_style": "{ BasedOnStyle: Microsoft, ColumnLimit: 80, AlignTrailingComments: true, AlignConsecutiveMacros: true, AlignAfterOpenBracket: AlwaysBreak, BinPackArguments: false, BinPackParameters: false, AllowAllArgumentsOnNextLine: true, AllowAllParametersOfDeclarationOnNextLine: true, AllowAllConstructorInitializersOnNextLine: true, ConstructorInitializerAllOnOneLineOrOnePerLine: true, SortIncludes: false}",
+}
