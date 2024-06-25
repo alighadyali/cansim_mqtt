@@ -8,3 +8,5 @@
 - `docker build -t confobulater:arm64v8 -f Dockerfile.arm64v8.debug .`
 
 docker build --rm -f "./Dockerfile.arm64v8.debug" -t confabulator:0.0.1-arm64v8 .
+docker build --rm -f "./Dockerfile.arm64v8.debug" -t alighadyali/confabulator:0.0.1-arm64v8 .
+docker push alighadyali/confabulator:0.0.1-arm64v8
